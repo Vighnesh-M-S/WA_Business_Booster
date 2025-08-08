@@ -122,7 +122,7 @@ mcp = FastMCP(
     "Job Finder MCP Server",
     auth=SimpleBearerAuthProvider(TOKEN),
 )
-
+# import mcp_vendor
 # --- Tool: validate (required by Puch) ---
 @mcp.tool
 async def validate() -> str:
@@ -202,7 +202,7 @@ async def make_img_black_and_white(
         return [ImageContent(type="image", mimeType="image/png", data=bw_base64)]
     except Exception as e:
         raise McpError(ErrorData(code=INTERNAL_ERROR, message=str(e)))
-
+import mcp_vendor
 # --- Run MCP Server ---
 async def main():
     print("🚀 Starting MCP server on http://0.0.0.0:8086")
