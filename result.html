@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Futuristic Fish Vendor Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{--glass: rgba(255,255,255,0.06);--accent: #0ea5e9;--accent2:#06b6d4}
+    body{background: radial-gradient(1200px 600px at 10% 10%, rgba(14,165,233,0.08), transparent), radial-gradient(800px 400px at 90% 90%, rgba(6,182,212,0.06), transparent); font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    .glass{background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.06)}
+    .neon{box-shadow: 0 6px 24px rgba(14,165,233,0.12), inset 0 -2px 12px rgba(6,182,212,0.02)}
+    .glow-text{background: linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+    .float-in{animation: floatIn 0.7s cubic-bezier(.2,.9,.2,1) both}
+    @keyframes floatIn{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+  </style>
+</head>
+<body class="min-h-screen text-slate-100">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <header class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-extrabold glow-text">Fish Vendor Dashboard</h1>
+      <span class="text-slate-300 text-sm">Vendor: Ocean Fresh #FISH-101</span>
+    </header>
+
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section class="lg:col-span-2 glass p-6 rounded-2xl">
+        <h2 class="text-xl font-semibold mb-4">Incoming Orders</h2>
+        <div id="ordersList" class="grid gap-4"></div>
+      </section>
+      <aside class="glass p-6 rounded-2xl">
+        <h3 class="font-semibold mb-3">Delivery Agents</h3>
+        <div id="agentsList" class="grid gap-3"></div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const orders = [
+      {id:'ORD-2001',name:'Arjun Das',phone:'919800000001',amount:450,items:['Rohu Fish - 2kg','Hilsa Fish - 1kg'],address:'Sea View Apartments, Kochi',status:'new'},
+      {id:'ORD-2002',name:'Meera Nair',phone:'919800000002',amount:300,items:['Pomfret - 1.5kg'],address:'Marine Drive, Kochi',status:'new'},
+      {id:'ORD-2003',name:'Salman Khan',phone:'919800000003',amount:500,items:['King Fish - 2kg'],address:'Fort Kochi, Kochi',status:'new'}
+    ];
+
+    const agents = [
+      {id:'D-01',name:'Ravi',phone:'919900000001',assigned:[]},
+      {id:'D-02',name:'Anju',phone:'919900000002',assigned:[]}
+    ];
+
+    function renderOrders(){
+      const container=document.getElementById('ordersList');
+      container.innerHTML='';
+      orders.forEach((o,idx)=>{
+        const card=document.createElement('div');
+        card.className='glass p-4 rounded-xl float-in';
+        card.innerHTML=`<div class='flex justify-between'>
+          <div>
+            <div class='font-semibold'>${o.name} <span class='text-xs text-slate-400'>${o.id}</span></div>
+            <div class='text-sm'>${o.items.join(', ')}</div>
+            <div class='text-xs text-slate-400'>${o.address}</div>
+          </div>
+          <div class='text-right'>
+            <div class='font-semibold'>₹${o.amount}</div>
+            ${o.status==='new'?`<button onclick='acceptOrder(${idx})' class='mt-2 px-3 py-1 bg-emerald-600 rounded-lg'>Accept</button>
+            <button onclick='rejectOrder(${idx})' class='mt-2 px-3 py-1 bg-rose-600 rounded-lg'>Reject</button>`:''}
+          </div>
+        </div>`;
+        container.appendChild(card);
+      });
+    }
+
+    function renderAgents(){
+      const container=document.getElementById('agentsList');
+      container.innerHTML='';
+      agents.forEach(a=>{
+        container.innerHTML += `<div class='p-3 glass rounded-lg'>${a.name} <span class='text-xs text-slate-400'>${a.id}</span></div>`;
+      });
+    }
+
+    function acceptOrder(idx){
+      orders[idx].status='accepted';
+      alert(`Order ${orders[idx].id} accepted. Processing...`);
+      renderOrders();
+    }
+    function rejectOrder(idx){
+      alert(`Order ${orders[idx].id} rejected. Message sent: Order could not be completed.`);
+      orders[idx].status='rejected';
+      renderOrders();
+    }
+
+    renderOrders();
+    renderAgents();
+  </script>
+</body>
+</html>

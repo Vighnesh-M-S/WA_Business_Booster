@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Futuristic Vendor Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Extra futuristic styling */
+    :root{--glass: rgba(255,255,255,0.06);--accent: #7c3aed;--accent2:#06b6d4}
+    body{background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.08), transparent), radial-gradient(800px 400px at 90% 90%, rgba(6,182,212,0.06), transparent); font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    .glass{background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.06)}
+    .neon{box-shadow: 0 6px 24px rgba(124,58,237,0.12), inset 0 -2px 12px rgba(6,182,212,0.02)}
+    .glow-text{background: linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+    .pulse{animation: pulse 3s infinite}
+    @keyframes pulse{0%{transform:translateY(0);opacity:1}50%{transform:translateY(-4px);opacity:0.92}100%{transform:translateY(0);opacity:1}}
+    /* small floating cards animation */
+    .float-in{animation: floatIn 0.7s cubic-bezier(.2,.9,.2,1) both}
+    @keyframes floatIn{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+    /* custom modal backdrop */
+    .modal-backdrop{background:linear-gradient(90deg, rgba(12,12,16,0.6), rgba(12,12,16,0.3));backdrop-filter:blur(6px)}
+    /* particle canvas covers */
+    #particles{position:fixed;inset:0;z-index:0;opacity:0.35}
+    .card-anim:hover{transform:translateY(-8px) rotateX(2deg) scale(1.01);transition:transform .25s}
+    /* small responsive tweak */
+    @media (max-width:640px){.hide-sm{display:none}}    
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 relative overflow-x-hidden">
+  <canvas id="particles"></canvas>
+  <div class="max-w-7xl mx-auto px-4 py-8 relative z-10">
+    <header class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-extrabold glow-text">Vendor Dashboard <span class="text-sm font-medium text-slate-300">— Live Orders</span></h1>
+        <p class="mt-1 text-sm text-slate-400">Manage orders, assign delivery agents and collect payments — all in one futuristic panel.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:block text-right mr-4">
+          <div class="text-xs text-slate-400">Vendor</div>
+          <div class="font-semibold">Local Vendor • #KD-209</div>
+        </div>
+        <button id="notificationBell" class="p-3 rounded-xl glass neon hover:scale-105 transition-transform"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h11z"/></svg></button>
+      </div>
+    </header>
+
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Orders list -->
+      <section class="lg:col-span-2">
+        <div class="glass rounded-2xl p-6 neon card-anim">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Incoming Orders</h2>
+            <div class="text-sm text-slate-400">Auto-refresh simulated • <span id="timeNow"></span></div>
+          </div>
+
+          <div id="ordersList" class="grid gap-4">
+            <!-- JS will inject order cards -->
+          </div>
+
+          <div class="mt-6 text-center text-sm text-slate-400">No real backend — this demo simulates messaging, delivery assignment, and payment steps.</div>
+        </div>
+      </section>
+
+      <!-- Right column: Agents & Activity -->
+      <aside class="space-y-6">
+        <div class="glass rounded-2xl p-5 neon card-anim">
+          <h3 class="font-semibold">Delivery Agents</h3>
+          <div id="agentsList" class="mt-3 grid gap-3">
+            <!-- injected -->
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-5 neon card-anim">
+          <h3 class="font-semibold">Activity Feed</h3>
+          <div id="activityFeed" class="mt-3 text-sm text-slate-300 max-h-64 overflow-auto space-y-3"></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Modal skeleton -->
+  <div id="modal" class="fixed inset-0 hidden items-center justify-center z-30">
+    <div class="absolute inset-0 modal-backdrop"></div>
+    <div class="relative max-w-xl w-full p-6 glass rounded-2xl">
+      <div id="modalContent"></div>
+      <div class="mt-4 text-right">
+        <button onclick="closeModal()" class="px-4 py-2 rounded-lg text-sm bg-transparent border border-slate-600">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed right-6 bottom-6 hidden z-40"></div>
+
+  <script>
+    // ----- Sample data -----
+    const orders = [
+      {id: 'ORD-1001', name: 'Rahul Sharma', phone: '919876543210', amount: 399, items: ['Paneer Butter Masala', 'Naan x2'], address: '12B, MG Road, Kolkata', status: 'new', timestamp: Date.now()-1000*60*3},
+      {id: 'ORD-1002', name: 'Priya Singh', phone: '919812345678', amount: 249, items: ['Veg Biryani'], address: 'Flat 7, Park Street, Kolkata', status: 'new', timestamp: Date.now()-1000*60*8},
+      {id: 'ORD-1003', name: 'Amit Roy', phone: '919800112233', amount: 120, items: ['Samosa x3'], address: 'Lake View Colony, Kolkata', status: 'new', timestamp: Date.now()-1000*60*16}
+    ];
+
+    const agents = [
+      {id: 'D-01', name: 'Raju', phone: '919900000001', active:true, assigned: []},
+      {id: 'D-02', name: 'Sunita', phone: '919900000002', active:true, assigned: []},
+      {id: 'D-03', name: 'Ramesh', phone: '919900000003', active:true, assigned: []}
+    ];
+
+    // ----- Helpers -----
+    function fmtTime(ts){
+      const d=new Date(ts); return d.toLocaleTimeString();
+    }
+    function toast(html){
+      const t=document.getElementById('toast');
+      const el=document.createElement('div'); el.className='glass p-4 rounded-lg mb-3 max-w-sm shadow-lg animate-fade-in'; el.innerHTML=html;
+      t.appendChild(el); t.classList.remove('hidden'); setTimeout(()=>{el.remove(); if(!t.children.length) t.classList.add('hidden')}, 5000);
+    }
+
+    // ----- Render functions -----
+    function renderOrders(){
+      const container=document.getElementById('ordersList'); container.innerHTML='';
+      orders.forEach((o, idx)=>{
+        const card=document.createElement('div'); card.className='glass p-4 rounded-xl float-in card-anim';
+        card.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-sm text-slate-300">${o.id} • <span class='text-xs text-slate-400'>${fmtTime(o.timestamp)}</span></div>
+              <div class="text-lg font-semibold mt-1">${o.name} <span class="ml-2 text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300">₹${o.amount}</span></div>
+              <div class="mt-2 text-sm text-slate-300">${o.items.join(', ')}<span class='hidden sm:inline'> • ${o.address}</span></div>
+            </div>
+            <div class="text-right">
+              <div class="mb-2">
+                <span class='px-3 py-1 rounded-full text-xs font-medium' style='background: ${o.status==='new'?"linear-gradient(90deg,#0ea5a4,#7c3aed)":o.status==='accepted'?"linear-gradient(90deg,#06b6d4,#10b981)":"linear-gradient(90deg,#ef4444,#f97316)"}'>${o.status.toUpperCase()}</span>
+              </div>
+              <div class='flex gap-2 flex-col'>
+                ${o.status==='new'?`<button class='acceptBtn px-3 py-2 rounded-lg text-sm font-semibold neon' data-idx='${idx}'>Accept</button><button class='rejectBtn px-3 py-2 rounded-lg text-sm border border-slate-600' data-idx='${idx}'>Reject</button>`:o.status==='accepted'?`<button class='readyBtn px-3 py-2 rounded-lg text-sm bg-indigo-600 hover:scale-105' data-idx='${idx}'>Mark Ready</button>`:o.status==='ready'?`<button class='assignBtn px-3 py-2 rounded-lg text-sm bg-teal-600' data-idx='${idx}'>Assign Delivery</button>`:o.status==='assigned'?`<button class='deliveredBtn px-3 py-2 rounded-lg text-sm bg-emerald-600' data-idx='${idx}'>Mark Delivered</button>`:'<span class="text-xs text-slate-400">Completed</span>'}
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // attach handlers
+      document.querySelectorAll('.acceptBtn').forEach(b=>b.addEventListener('click',(e)=>{acceptOrder(e.target.dataset.idx)}));
+      document.querySelectorAll('.rejectBtn').forEach(b=>b.addEventListener('click',(e)=>{rejectOrder(e.target.dataset.idx)}));
+      document.querySelectorAll('.readyBtn').forEach(b=>b.addEventListener('click',(e)=>{markReady(e.target.dataset.idx)}));
+      document.querySelectorAll('.assignBtn').forEach(b=>b.addEventListener('click',(e)=>{openAssignModal(e.target.dataset.idx)}));
+      document.querySelectorAll('.deliveredBtn').forEach(b=>b.addEventListener('click',(e)=>{markDelivered(e.target.dataset.idx)}));
+    }
+
+    function renderAgents(){
+      const c=document.getElementById('agentsList'); c.innerHTML='';
+      agents.forEach(a=>{
+        const div=document.createElement('div'); div.className='p-3 rounded-lg flex items-center justify-between bg-gradient-to-r from-slate-800 to-slate-900';
+        div.innerHTML = `<div>
+            <div class='font-semibold'>${a.name} <span class='text-xs text-slate-400'>• ${a.id}</span></div>
+            <div class='text-xs text-slate-400'>Assigned: ${a.assigned.length}</div>
+          </div>
+          <div class='text-sm text-slate-300'>${a.active?'<span class="px-2 py-1 rounded-md bg-emerald-700/30">Online</span>':'<span class="px-2 py-1 rounded-md bg-rose-700/30">Offline</span>'}</div>`;
+        c.appendChild(div);
+      });
+    }
+
+    function logActivity(txt){
+      const f=document.getElementById('activityFeed'); const el=document.createElement('div'); el.className='text-slate-300/90'; el.innerHTML=`<div class='text-xs text-slate-400'>${new Date().toLocaleTimeString()}</div><div>${txt}</div>`; f.prepend(el);
+    }
+
+    // ----- Action handlers -----
+    function acceptOrder(idx){
+      const o=orders[idx]; if(!o) return;
+      o.status='accepted'; renderOrders(); toast(`<strong>Accepted</strong><div>Order ${o.id} accepted. Processing...</div>`); logActivity(`Order <strong>${o.id}</strong> accepted by vendor.`);
+    }
+
+    function rejectOrder(idx){
+      const o=orders[idx]; if(!o) return;
+      // ask for optional message
+      openModal(`<h3 class='text-lg font-semibold mb-2'>Reject ${o.id}</h3><p class='text-sm text-slate-300 mb-4'>Send a message to the customer explaining the rejection.</p><textarea id='rejectMsg' placeholder='Optional message (default: Order could not be completed)' class='w-full p-3 rounded-md bg-slate-800 text-slate-200'></textarea><div class='mt-4 text-right'><button onclick="sendReject(${idx})" class='px-4 py-2 rounded-lg bg-rose-600'>Send</button></div>`);
+    }
+
+    function sendReject(idx){
+      const o=orders[idx]; if(!o) return; const msg=document.getElementById('rejectMsg').value || 'Order could not be completed.'; closeModal(); o.status='rejected'; renderOrders(); toast(`<strong>Message sent</strong><div>To ${o.name}: ${msg}</div>`); logActivity(`Order <strong>${o.id}</strong> rejected. Message sent to ${o.name}.`);
+    }
+
+    function markReady(idx){
+      const o=orders[idx]; if(!o) return; o.status='ready'; renderOrders(); toast(`<strong>${o.id} is Ready</strong><div>Pick a delivery agent to assign.</div>`); logActivity(`Order <strong>${o.id}</strong> is ready for pickup.`);
+      // open assign modal
+      setTimeout(()=>openAssignModal(idx), 400);
+    }
+
+    function openAssignModal(idx){
+      const o=orders[idx]; if(!o) return;
+      let html=`<h3 class='text-lg font-semibold mb-2'>Assign Delivery for ${o.id}</h3><p class='text-sm text-slate-300 mb-3'>Select a delivery agent to send customer location.</p><div class='grid gap-2'>`;
+      agents.forEach((a,i)=>{ html += `<button class='w-full text-left p-3 rounded-md bg-slate-800 hover:scale-102' onclick='assignToAgent(${idx}, ${i})'>${a.name} <span class='text-xs text-slate-400 ml-2'>${a.id}</span><div class='text-xs text-slate-400 mt-1'>Assigned: ${a.assigned.length}</div></button>`});
+      html += `</div>`;
+      openModal(html);
+    }
+
+    function assignToAgent(orderIdx, agentIdx){
+      const o=orders[orderIdx]; const a=agents[agentIdx]; if(!o||!a) return;
+      o.status='assigned'; o.assignedTo=a.id; a.assigned.push(o.id);
+      closeModal(); renderOrders(); renderAgents(); toast(`<strong>Assigned</strong><div>${a.name} assigned to ${o.id}. Location: ${o.address}</div>`); logActivity(`Order <strong>${o.id}</strong> assigned to <strong>${a.name}</strong>. Location shared with agent (${a.phone}).`);
+    }
+
+    function markDelivered(idx){
+      const o=orders[idx]; if(!o) return; o.status='delivered'; renderOrders(); logActivity(`Order <strong>${o.id}</strong> marked delivered.`);
+      // WhatsApp pay link (simulated): prefill message to customer
+      const msg = encodeURIComponent(`Hi ${o.name}, your order ${o.id} has been delivered. Please complete the payment of ₹${o.amount} via WhatsApp Pay.`);
+      const waLink = `https://wa.me/${o.phone.replace(/[^0-9]/g,'')}?text=${msg}`;
+      openModal(`<h3 class='text-lg font-semibold mb-2'>Collect Payment</h3><p class='text-sm text-slate-300 mb-3'>Request payment via WhatsApp Pay (opens chat with prefilled message).</p><div class='flex gap-2'><a href='${waLink}' target='_blank' class='px-4 py-2 rounded-lg bg-green-600'>Open WhatsApp Chat</a><button onclick='closeModal()' class='px-4 py-2 rounded-lg border'>Close</button></div>`);
+      toast(`<strong>Delivered</strong><div>Payment link prepared for ${o.name}.</div>`);
+    }
+
+    // Modal utilities
+    function openModal(html){document.getElementById('modalContent').innerHTML=html; document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex');}
+    function closeModal(){document.getElementById('modal').classList.add('hidden'); document.getElementById('modal').classList.remove('flex');}
+
+    // ----- Init -----
+    function init(){ renderOrders(); renderAgents(); document.getElementById('timeNow').innerText=new Date().toLocaleTimeString(); setInterval(()=>document.getElementById('timeNow').innerText=new Date().toLocaleTimeString(),1000);
+      logActivity('<strong>Dashboard</strong> ready.');
+    }
+
+    init();
+
+    // ----- Particle background (simple) -----
+    const canvas = document.getElementById('particles'); const ctx = canvas.getContext('2d'); let w,h,particles=[];
+    function onResize(){w=canvas.width = innerWidth; h=canvas.height = innerHeight;}
+    window.addEventListener('resize', onResize); onResize();
+    function rand(min,max){return Math.random()*(max-min)+min}
+    for(let i=0;i<60;i++){particles.push({x:rand(0,w),y:rand(0,h),r:rand(0.6,2.4),vx:rand(-0.3,0.3),vy:rand(-0.2,0.2)})}
+    function update(){ctx.clearRect(0,0,w,h); for(const p of particles){p.x+=p.vx; p.y+=p.vy; if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0; ctx.beginPath(); ctx.fillStyle='rgba(124,58,237,0.6)'; ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();}
+      // connect nearby
+      for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const a=particles[i], b=particles[j]; const dx=a.x-b.x, dy=a.y-b.y; const d=Math.sqrt(dx*dx+dy*dy); if(d<130){ctx.beginPath(); ctx.strokeStyle='rgba(6,182,212,'+ (0.12 - d/1200) +')'; ctx.lineWidth=0.7; ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();}}}
+    requestAnimationFrame(update); setInterval(()=>requestAnimationFrame(update),16);
+
+    // small accessibility: Esc to close modal
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+  </script>
+</body>
+</html>
