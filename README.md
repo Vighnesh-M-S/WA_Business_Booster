@@ -1,172 +1,94 @@
-<<<<<<< HEAD
-# WA_Business_Booster
-Helping the local vendors perform better business via WhatsApp
-=======
-# MCP Starter for Puch AI
+# Manglore FishMonger - WhatsApp Ordering System
+🚀 A complete solution for fish vendors to manage orders via WhatsApp using MCP & Puch AI.
 
-This is a starter template for creating your own Model Context Protocol (MCP) server that works with Puch AI. It comes with ready-to-use tools for job searching and image processing.
+## 📌 Quick Start Guide
+1. Connect to MCP Server
+To start using the system, connect Puch to your MCP server:
 
-## What is MCP?
-
-MCP (Model Context Protocol) allows AI assistants like Puch to connect to external tools and data sources safely. Think of it like giving your AI extra superpowers without compromising security.
-
-## What's Included in This Starter?
-
-### 🎯 Job Finder Tool
-- **Analyze job descriptions** - Paste any job description and get smart insights
-- **Fetch job postings from URLs** - Give a job posting link and get the full details
-- **Search for jobs** - Use natural language to find relevant job opportunities
-
-### 🖼️ Image Processing Tool
-- **Convert images to black & white** - Upload any image and get a monochrome version
-
-### 🔐 Built-in Authentication
-- Bearer token authentication (required by Puch AI)
-- Validation tool that returns your phone number
-
-## Quick Setup Guide
-
-### Step 1: Install Dependencies
-
-First, make sure you have Python 3.11 or higher installed. Then:
-
-```bash
-# Create virtual environment
-uv venv
-
-# Install all required packages
-uv sync
-
-# Activate the environment
-source .venv/bin/activate
+text
+```
+/mcp use 1ceqtZUwWh
+(Replace with your actual MCP server ID if self-hosted)
 ```
 
-### Step 2: Set Up Environment Variables
 
-Create a `.env` file in the project root:
+2. Available Commands for Customers
+Command	Example	Description
+/menu	/menu	View today's seafood menu
+/order	/order 1kg surmai, 2 prawns - Name: John, Contact: +919876543210	Place an order
+/location	/location	Get shop address & map link
+/help	/help	Show all commands
+### 🛠 Vendor (Admin) Features (Future Updates)
+1. Update Menu (Vendor-Only)
+Command:
 
-```bash
-# Copy the example file
-cp .env.example .env
+text
+```
+/update_menu [item] [price] [status]  
+```
+### Example:
+
+text
+```
+/update_menu surmai 850 available  
+*(Updates Seer Fish price to ₹850/kg and marks it available)*
 ```
 
-Then edit `.env` and add your details:
+2. Accept/Reject Orders
+Command:
 
-```env
-AUTH_TOKEN=your_secret_token_here
-MY_NUMBER=919876543210
+text
+/order_action [order_id] [accept/reject]  
+Example:
+
+text
+/order_action 23 accept  
+(Accepts order #23 and notifies customer via WhatsApp)
+
+3. Assign Delivery Agent
+Command:
+
+text
+/assign_delivery [order_id] [agent_phone]  
+Example:
+
+text
+/assign_delivery 23 +919876543210  
+(Assigns order #23 to delivery agent & shares customer details)
+
+## ⚙ Setup & Deployment
+1. For Customers
+No setup needed! Just send commands to Puch in WhatsApp.
+
+2. For Vendors (Self-Hosting)
+Deploy on Render (Recommended):
+
+bash
+```
+pip install -r requirements.txt
+python business_server.py
+```
+Configure .env:
+
+env
+```
+MCP_TOKEN=your_secret_token
+WHATSAPP_NUMBER=your_number
+```
+Connect to Puch:
+
+text
+```
+/mcp use YOUR_MCP_ID
 ```
 
-**Important Notes:**
-- `AUTH_TOKEN`: This is your secret token for authentication. Keep it safe!
-- `MY_NUMBER`: Your WhatsApp number in format `{country_code}{number}` (e.g., `919876543210` for +91-9876543210)
 
-### Step 3: Run the Server
-
-```bash
-cd mcp-bearer-token
-python mcp_starter.py
-```
-
-You'll see: `🚀 Starting MCP server on http://0.0.0.0:8086`
-
-### Step 4: Make It Public (Required by Puch)
-
-Since Puch needs to access your server over HTTPS, you need to expose your local server:
-
-#### Option A: Using ngrok (Recommended)
-
-1. **Install ngrok:**
-   Download from https://ngrok.com/download
-
-2. **Get your authtoken:**
-   - Go to https://dashboard.ngrok.com/get-started/your-authtoken
-   - Copy your authtoken
-   - Run: `ngrok config add-authtoken YOUR_AUTHTOKEN`
-
-3. **Start the tunnel:**
-   ```bash
-   ngrok http 8086
-   ```
-
-#### Option B: Deploy to Cloud
-
-You can also deploy this to services like:
-- Railway
-- Render
-- Heroku
-- DigitalOcean App Platform
-
-## How to Connect with Puch AI
-
-1. **[Open Puch AI](https://wa.me/+919998881729)** in your browser
-2. **Start a new conversation**
-3. **Use the connect command:**
-   ```
-   /mcp connect https://your-domain.ngrok.app/mcp your_secret_token_here
-   ```
-
-### Debug Mode
-
-To get more detailed error messages:
-
-```
-/mcp diagnostics-level debug
-```
-
-## Customizing the Starter
-
-### Adding New Tools
-
-1. **Create a new tool function:**
-   ```python
-   @mcp.tool(description="Your tool description")
-   async def your_tool_name(
-       parameter: Annotated[str, Field(description="Parameter description")]
-   ) -> str:
-       # Your tool logic here
-       return "Tool result"
-   ```
-
-2. **Add required imports** if needed
+## 🔮 Planned Features
+✅ Payments Integration (UPI, Cash on Delivery)
+✅ Order Tracking (/track_order [order_id])
+✅ Inventory Alerts (Auto-notify when stock is low)
+✅ Multi-Vendor Support (For fish market associations)
 
 
-## 📚 **Additional Documentation Resources**
-
-### **Official Puch AI MCP Documentation**
-- **Main Documentation**: https://puch.ai/mcp
-- **Protocol Compatibility**: Core MCP specification with Bearer & OAuth support
-- **Command Reference**: Complete MCP command documentation
-- **Server Requirements**: Tool registration, validation, HTTPS requirements
-
-### **Technical Specifications**
-- **JSON-RPC 2.0 Specification**: https://www.jsonrpc.org/specification (for error handling)
-- **MCP Protocol**: Core protocol messages, tool definitions, authentication
-
-### **Supported vs Unsupported Features**
-
-**✓ Supported:**
-- Core protocol messages
-- Tool definitions and calls
-- Authentication (Bearer & OAuth)
-- Error handling
-
-**✗ Not Supported:**
-- Videos extension
-- Resources extension
-- Prompts extension
-
-## Getting Help
-
-- **Join Puch AI Discord:** https://discord.gg/VMCnMvYx
-- **Check Puch AI MCP docs:** https://puch.ai/mcp
-- **Puch WhatsApp Number:** +91 99988 81729
-
----
-
-**Happy coding! 🚀**
-
-Use the hashtag `#BuildWithPuch` in your posts about your MCP!
-
-This starter makes it super easy to create your own MCP server for Puch AI. Just follow the setup steps and you'll be ready to extend Puch with your custom tools!
->>>>>>> 35dbb18 (Add MCP starter)
+## 🐟 Happy Selling!
+Powered by Puch AI & MCP<<<<<<< HEAD
