@@ -38,23 +38,32 @@ text
 Command:
 
 text
+```
 /order_action [order_id] [accept/reject]  
+```
 Example:
 
 text
+```
 /order_action 23 accept  
 (Accepts order #23 and notifies customer via WhatsApp)
+```
 
 3. Assign Delivery Agent
 Command:
 
 text
+```
 /assign_delivery [order_id] [agent_phone]  
+```
+
 Example:
 
 text
+```
 /assign_delivery 23 +919876543210  
 (Assigns order #23 to delivery agent & shares customer details)
+```
 
 ## ⚙ Setup & Deployment
 1. For Customers
