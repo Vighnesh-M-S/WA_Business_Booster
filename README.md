@@ -84,10 +84,10 @@ text
 
 
 ## 🔮 Planned Features
-✅ Payments Integration (UPI, Cash on Delivery)
-✅ Order Tracking (/track_order [order_id])
-✅ Inventory Alerts (Auto-notify when stock is low)
-✅ Multi-Vendor Support (For fish market associations)
+- ✅ Payments Integration (UPI, Cash on Delivery)
+- ✅ Order Tracking (/track_order [order_id])
+- ✅ Inventory Alerts (Auto-notify when stock is low)
+- ✅ Multi-Vendor Support (For fish market associations)
 
 
 ## 🐟 Happy Selling!
