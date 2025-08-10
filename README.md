@@ -100,4 +100,4 @@ text
 
 
 ## 🐟 Happy Selling!
-Powered by Puch AI & MCP<<<<<<< HEAD
+##BuildWithPuch
