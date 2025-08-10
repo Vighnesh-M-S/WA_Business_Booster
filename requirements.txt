@@ -1,0 +1,5 @@
+
+fastmcp
+pydantic
+httpx
+python-dotenv
